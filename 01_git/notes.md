@@ -774,7 +774,7 @@ __1. Untracked:__ Any file in your working directory that was not present in you
 
 __2. Tracked:__ Any file that Git already knows about. Tracked files have been included in a past snapshot and can exist in one of three sub-states: __Unmodified, Modified,__ or __Staged__.
 
-## 🔄 The 4 Core Sub-States of the Git Lifecycle
+## 🔄 The 4 Core Sub-States of the Git Lifecycle (File Status Lifecycle)
 
 As you write code, your files cycle through these four distinct states.
 
@@ -812,9 +812,9 @@ __4. Modified__
 
 * __Next step:__ Run git add to move these new changes back to the Staged state.
 
-![alt text](./z00_images/image25.png)
-
 ![alt text](./z00_images/image26.png)
+
+![alt text](./z00_images/image25.png)
 
 ---
 
@@ -996,13 +996,15 @@ __Example:__ The database table holding user accounts and encrypted passwords.
 ---
 
 ## 🎯 Architectural Comparison Matrix for Interviews
-|Metric|Git's |Three-Tier Architecture|Application Three-Tier Architecture|
+
+|Metric|Git's Three-Tier Architecture|Application Three-Tier Architecture|
 |:--:|:--:|:--:|
 |Domain|Devops / Version Control Workflow.|Systems Design / Software Architecture.|
 |Core Goal|Manage change tracking and code history safely.|Separate structural concerns for scaling and security.|
 |Component 1|__Working Directory:__ Where you write code.|__Presentation Layer:__ The user interface.|
 |Component 2|__Staging Area:__ Where you organize changes.|__Application Layer:__ The business logic engine.|
 |Component 3|__Git Directory:__ Where history is stored.|__Data Layer:__ The permanent database.|
+
 ---
 
 # 🔥 Common Interview Follow-Up Question
