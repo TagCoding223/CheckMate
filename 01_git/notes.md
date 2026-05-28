@@ -3091,6 +3091,326 @@ git merge --no-ff feature-branch
 This forces Git to create a Merge Commit even if it *could* have fast-forwarded. This preserves the visual 'bracket' in the history, making it clear where a feature started and ended, which is invaluable for debugging or reverting features later."
 
 ---
+
+# Git diff
+
+The ``git diff`` is an informative command (means do nothing just give information) that shows the differences between two commits. It is used to compare the changes made in one commit with the changes made in another commit. Git consider the changed versions of same file as two different files. Then it gives names to these two files and shows the differences between them.
+
+## 🔍 1. What is the git diff Command?
+__The Interview Answer:__
+"``git diff`` is a diagnostic tool used to compare different states of data within the Git architecture. It computes the differences (deltas) between any two data sources—such as your Working Directory, the Staging Area, specific commits, or different branches. It reads these states and outputs them in a unified diff format."
+
+## 📖 2. How to Read a git diff Output
+Let’s decode the exact output from your log line-by-line. This is a common requirement in practical technical interviews.
+
+* ``a/`` – the original file (before changes)
+* ``b/`` – the updated file (after changes)
+* ``---`` – marks the beginning of the original file
+* ``+++`` – marks the beginning of the updated file
+* ``@@`` – shows the line numbers and position of changes
+
+Here the file A and file B are the same file but different versions.
+
+Git will show you the changes made in the file A and file B. It will also show you the line number where the change occurred along with little preview of the change.
+
+__Example:__
+```bash
+diff --git a/home.html b/home.html
+index d4d2f23..113c6d0 100644
+--- a/home.html
++++ b/home.html
+@@ -1,6 +1,8 @@
++<html>
+ <body>
+ <h1>Home Page</h1>
+...
+```
+
+* __Line 1 (``diff --git a/home.html b/home.html``):__ Shows the internal keys being compared. Git treats the source file as ``a/`` and the target file as ``b/``.
+
+* __Line 2 (``index d4d2f23..113c6d0 100644``):__ Lists the internal Git object hashes (blobs) of the two file states being compared, followed by the file mode (``100644`` means a normal, non-executable text file).
+
+* __Lines 3 & 4 (``--- a/home.html`` and ``+++ b/home.html``):__ Assigns symbols. --- represents the original state, and ``+++`` represents the new modifications.
+
+* Line 5 (``@@ -1,6 +1,8 @@``): This is the hunk header.
+
+  * ``-1,6`` means: In the original file, this section starts at line 1 and spans 6 lines.
+
+  * ``+1,8`` means: In the modified file, this section starts at line 1 and now spans 8 lines.
+
+* The Text Lines:
+
+  * Lines starting with a space are unchanged context lines.
+
+  * Lines starting with a green plus `+` were added in the target state.
+
+  * Lines starting with a red minus `-` were removed from the source state.
+
+---
+
+## 🗺️ 3. The Great Matrix: What are you comparing?
+Your terminal test highlights the fundamental rule of Git's default diff behavior. Let's look at exactly how to target different comparisons.
+
+### A. The Default: Working Directory vs. Staging Area
+* __The Command:__ ``git diff``
+
+This command shows the unstaged changes in your working directory compared to the staging area. This command alone will not show you the changes made in the file A and file B, you need to provide options to show the changes.
+
+* __What it does:__ Compares what is currently on your hard drive (Working Directory) with what you have already frozen via ``git add`` (Staging Area).
+
+* __Why your log behaved this way:__ 
+
+  1. You added the ``<body>`` changes to the staging area.
+  2. You then added ``<html>`` tags to the file on your hard drive but did not run git add.
+  3. Running ``git diff`` showed only the ``<html>`` tags because those were the only differences between your screen and the staging buffer.
+
+__⚠️ The Interview Core Trap:__ If a file has been modified but you run ``git add``, running a plain ``git diff`` immediately after will output __nothing__. Why? Because your Working Directory and Staging Area are now perfectly identical.
+
+__Example:__
+```bash
+test on  master
+❯ edit home.html
+
+test on  master
+❯Get-Content -path home.html
+<body>
+<h1>Home Page</h1>
+<p>add at fix branch within p tag</p>
+<strong>New Line, Not change in pre exist lines</strong>
+<p>para tag</p>
+</body>
+
+test on  master [!] took 19s
+❯ git status
+On branch master
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   home.html
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+test on  master [!]
+❯ git add home.html
+
+test on  master [+]
+❯ git status
+On branch master
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        modified:   home.html
+
+test on  master
+❯ edit home.html
+
+test on  master
+❯Get-Content -path home.html
+<html>
+<body>
+<h1>Home Page</h1>
+<p>add at fix branch within p tag</p>
+<strong>New Line, Not change in pre exist lines</strong>
+<p>para tag</p>
+</body>
+</html>
+
+test on  master [!+]
+❯ git status
+On branch master
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        modified:   home.html
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   home.html
+
+❯ git diff
+diff --git a/home.html b/home.html # a/home.html represent to staging file, and b/home.html represent to modified file.
+index d4d2f23..113c6d0 100644
+--- a/home.html
++++ b/home.html
+@@ -1,6 +1,8 @@
++<html>
+ <body>
+ <h1>Home Page</h1>
+ <p>add at fix branch within p tag</p>
+ <strong>New Line, Not change in pre exist lines</strong>
+ <p>para tag</p>
+ </body>
++</html>
+```
+
+### B. Staged Files vs. Previous Commit
+* __The Command:__ ``git diff --staged`` (or ``git diff --cached``)
+
+This command shows the changes between your last commit and the staging area (i.e., changes that are staged and ready to be committed).
+
+__What it does:__ Compares what is sitting inside your __Staging Area__ with your last snapshot (__HEAD commit__). This answers the interview question: *"How do I review exactly what changes are about to be written into my next commit?"*
+
+__Example:__
+```bash
+test on  master [!+]
+❯ git diff --staged
+diff --git a/home.html b/home.html # b/home.html is staged file. 
+index 74d4bd4..d4d2f23 100644
+--- a/home.html
++++ b/home.html
+@@ -1,4 +1,6 @@
++<body> # this line start with + means this line not exist in a/home.html means in previous commit, added on current staged file b/home.html
+ <h1>Home Page</h1>
+ <p>add at fix branch within p tag</p>
+ <strong>New Line, Not change in pre exist lines</strong>
+ <p>para tag</p>
++</body>
+```
+
+### C. Working Directory vs. Previous Commit
+* __The Command:__ ``git diff HEAD``
+
+* __What it does:__ Ignores the Staging Area entirely. It compares everything currently on your hard drive directly against your last commit snapshot.
+
+__Example:__
+```bash
+test on  master [!+]
+❯ git diff HEAD
+diff --git a/home.html b/home.html
+index 74d4bd4..113c6d0 100644
+--- a/home.html
++++ b/home.html
+@@ -1,4 +1,8 @@
++<html>
++<body>
+ <h1>Home Page</h1>
+ <p>add at fix branch within p tag</p>
+ <strong>New Line, Not change in pre exist lines</strong>
+ <p>para tag</p>
++</body>
++</html>
+```
+
+## 🔀 4. Advanced Comparisons (Commits, Branches, and Specific Files)
+### Between Two Commits
+* __Using Space:__ ``git diff <commit1-sha> <commit2-sha>``
+
+* __Using Dots:__ ``git diff <commit1-sha>..<commit2-sha>``
+
+* __Note:__ In Git, both syntaxes yield the exact same result for simple commit-to-commit comparisons. It shows the changes needed to turn ``commit1`` into ``commit2``.
+
+__Example:__
+```bash
+test on  master [!+]
+❯ git log --oneline
+8b25859 (HEAD -> master) Info: Changes in fix.
+052ca11 (improve) Info: Changes in fix.
+60d53f3 Info: Changes in main.
+08b7ba4 Info: Merge fix branch.
+ad07053 Info: Edit on fix branch.
+9dec0a0 Info: Edit on main branch.
+51d5b2b Info: Test Fast-Forward Merge.
+eaf5a4f Dev: add para tag.
+6bd3722 Info: Initial Commit.
+
+test on  master [!+]
+❯ git diff 8b25859 6bd3722
+diff --git a/home.html b/home.html
+index 74d4bd4..d62a4c4 100644
+--- a/home.html
++++ b/home.html
+@@ -1,4 +1 @@
+ <h1>Home Page</h1>
+-<p>add at fix branch within p tag</p>
+-<strong>New Line, Not change in pre exist lines</strong>
+-<p>para tag</p>
+
+test on  master [!+]
+❯ git diff 6bd3722 8b25859
+diff --git a/home.html b/home.html
+index d62a4c4..74d4bd4 100644
+--- a/home.html
++++ b/home.html
+@@ -1 +1,4 @@
+ <h1>Home Page</h1>
++<p>add at fix branch within p tag</p>
++<strong>New Line, Not change in pre exist lines</strong>
++<p>para tag</p>
+
+test on  master [!+]
+❯ git diff 6bd372..8b25859
+diff --git a/home.html b/home.html
+index d62a4c4..74d4bd4 100644
+--- a/home.html
++++ b/home.html
+@@ -1 +1,4 @@
+ <h1>Home Page</h1>
++<p>add at fix branch within p tag</p>
++<strong>New Line, Not change in pre exist lines</strong>
++<p>para tag</p>
+```
+
+### Between Two Branches
+* __The Command:__ ``git diff main..feature-branch``
+
+* Shows all code differences between the tips of the two specified branches.
+
+### Target Specific Files (The ``--`` Selector)
+If you only want to see changes for one specific file across branches or commits, append a space, two dashes, and the filename:
+
+* __Specific file between commits:__ ``git diff <sha1> <sha2> -- path/to/file.js``
+
+* __Specific file between branches:__ ``git diff main..feature -- home.html``
+
+---
+
+# 🔥 Common Interview Follow-Up Questions
+## Q1: "What is the difference between ``git diff branchA..branchB`` and ``git diff branchA...branchB`` (Two dots vs Three dots)?"
+__Your Answer:__ "This is a major architectural difference:
+
+* ``git diff branchA..branchB`` compares the absolute tips of both branches directly.
+
+* ``git diff branchA...branchB`` finds the common ancestor where ``branchB`` originally split off from ``branchA``, and compares ``branchB`` against that ancestor. It filters out any changes that happened on ``branchA`` after the split, showing only what was written inside the feature branch."
+
+## Q2: "How can you get a quick summary of changed files via git diff without printing the thousands of lines of code changes?"
+__Your Answer:__ "You can use the stat flag:
+
+```Bash
+git diff --stat
+```
+
+This generates a high-level summary listing the names of altered files, how many lines were added or removed in each, and a small visual bar chart representing the volume of changes."
+
+__Example:__
+```bash
+test on  master [!+]
+❯ git diff
+diff --git a/home.html b/home.html
+index d4d2f23..113c6d0 100644
+--- a/home.html
++++ b/home.html
+@@ -1,6 +1,8 @@
++<html>
+ <body>
+ <h1>Home Page</h1>
+ <p>add at fix branch within p tag</p>
+ <strong>New Line, Not change in pre exist lines</strong>
+ <p>para tag</p>
+ </body>
++</html>
+
+test on  master [!+]
+❯ git diff --stat
+ home.html | 2 ++
+ 1 file changed, 2 insertions(+)
+```
+
+---
+
+# Git stash
+
+# Git tag
+
+---
 # ❤️ Sources Respect
 * https://docs.chaicode.com/youtube/chai-aur-git/
 * https://www.geeksforgeeks.org/git/git-interview-questions-and-answers/
