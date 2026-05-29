@@ -3732,8 +3732,6 @@ __Your Answer:__
 
 "No, branches in Git are completely independent, lightweight pointers. They are not linked to each other; they simply happen to contain the same 40-character commit SHA-1 hash at this moment. When a new commit is made, Git checks the symbolic `HEAD` reference to find the active branch, updates that specific pointer to the new commit's hash, and leaves the other branch pointer completely untouched."
 
-
-
 ---
 
 # Git tag
@@ -3746,6 +3744,106 @@ new created file they are not track(Untracked files) before not directly committ
 
 ```bash
 git commit -a -m "message"
+```
+
+---
+
+# How to add a file in last commit
+
+To add a file to the last commit, stage the file using `git add` and then amend the commit using `git commit --amend`.  This process rewrites the most recent commit to include the new changes.
+
+## Steps
+1. __Stage the file:__ Add the file you want to include to the staging area.
+```bash
+git add <file-name>
+```
+
+2. __Amend the commit:__ Update the last commit to include the staged changes.
+* To keep the existing commit message, use the `--no-edit` flag:
+
+```bash
+git commit --amend --no-edit
+```
+
+* To change the commit message, simply run:
+```bash
+git commit --amend
+```
+
+## Important Note
+__Amending commits rewrites history.__ If you have already pushed the original commit to a remote repository, you must force-push to update it:
+
+```bash
+git push --force-with-lease
+```
+
+Avoid amending commits that have been pushed to shared branches, as this can cause conflicts for other collaborators.
+
+__Example:__ *Suppose developer forget the untracked file not directly committed (skip staging area) and it perform commit, when he realize that he need to edit last commit.*
+
+```bash
+CheckMate on  main [!?] 
+❯ git status              
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   01_git/notes.md
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        01_git/z00_images/image44.png
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+CheckMate on  main [!?] 
+❯ git commit -a -m "Info: File Content changes between branches"
+[main b323085] Info: File Content changes between branches
+ 1 file changed, 188 insertions(+), 1 deletion(-)
+
+CheckMate on  main [?] 
+❯ git status                                                    
+On branch main
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        01_git/z00_images/image44.png
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+CheckMate on  main [?] 
+❯ git add . 
+
+CheckMate on  main [+] 
+❯ git status
+On branch main
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        new file:   01_git/z00_images/image44.png
+
+
+CheckMate on  main [+] 
+❯ git commit --amend                                            
+[main 6fa9ddd] Info: File Content changes between branches
+ Date: Fri May 29 17:37:02 2026 +0530
+ 2 files changed, 188 insertions(+), 1 deletion(-)
+ create mode 100644 01_git/z00_images/image44.png
+
+CheckMate on  main took 10s 
+❯ git status
+On branch main
+nothing to commit, working tree clean
+
+CheckMate on  main 
+❯ git log --oneline
+6fa9ddd (HEAD -> main) Info: File Content changes between branches
+971370a Desc: git stash
+199eb20 desc: Git diff
+c9dda47 Desc: Git Merge
+8a79dc8 Desc: Git branch, checkout and switch command.
+232cebd fix: formatting fix
+6ee432f docs: git behind the scene
+33654a1 docs: git local workflow notes
+
 ```
 
 ---
