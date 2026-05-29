@@ -3736,6 +3736,130 @@ __Your Answer:__
 
 # Git tag
 
+Tags are a way to mark a specific point in your repository. They are useful when you want to remember a specific version of your code or when you want to refer to a specific commit. Tags are like sticky notes that you can attach to your commits.
+
+### Creating a tag
+You can create a tag using the following command:
+
+```bash
+git tag <tag-name>
+```
+
+This command creates a new tag with the specified name. The tag will be attached to the current commit.
+
+### Create an annotated tag
+You can create an annotated tag using the following command:
+
+```bash
+git tag -a <tag-name> -m "Release 1.0"
+```
+
+This command creates an annotated tag with the specified name and message. The tag will be attached to the current commit.
+
+### List all tags
+You can list all tags using the following command:
+
+```bash
+git tag
+```
+
+This command lists all the tags in your repository.
+
+### Tagging a specific commit
+You can tag a specific commit using the following command:
+
+```bash
+git tag <tag-name> <commit-hash>
+```
+
+### Push tags to remote repository
+You can push tags to a remote repository using the following command:
+
+```bash
+git push origin <tag-name>
+```
+
+### Delete a tag
+You can delete a tag using the following command:
+
+```bash
+git tag -d <tag-name>
+```
+
+### Delete tag on remote repository
+You can delete a tag on a remote repository using the following command:
+
+```bash
+git push origin :<tag-name>
+```
+
+## 🏷️ 1. What is a Git Tag?
+__The Interview Answer:__
+"A Git Tag is an immutable reference pointer that marks a specific, significant point in a repository’s history—most commonly used to highlight release versions (e.g., `v1.0.0`, `v2.4.0-beta`). While branches are dynamic and move forward with every new commit, a tag is structurally frozen. Once attached to a commit, it never moves, serving as a permanent historical marker."
+
+## 🏢 2. Industry Workflows: Internal Development vs. Public Release
+Your observation about ignoring tags during daily internal development but mandating them for public releases is an industry best practice.
+
+### Internal Development (No Tags)
+* During daily sprints, developers commit code dozens of times a day to feature or develop branches.
+
+* Tagging every single internal commit would clutter the repository data structure and add zero value. Internal tracking relies entirely on branch names and short commit SHA-1 hashes.
+
+### Major Updates & Open Source Releases (Tags Mandated)
+* __Production Releases:__ When code moves to production, a tag is cut. This tells the entire organization exactly which state of the codebase is currently running live in the real world.
+
+* __Open Source & Semantic Versioning (v2.1.0-beta):__ In open-source projects, tags are crucial for package managers (like npm, pip, or NuGet). It allows users to safely target stable releases or test beta versions without pulling broken, in-progress code from the active `main` branch.
+
+### Who applies them?
+As you noted, individual developers rarely cut release tags during their daily coding. This responsibility typically falls to __Product Managers, Release Managers,__ or automated __CI/CD Deployment Pipelines__ (like GitHub Actions) triggered by a production approval sign-off.
+
+## 📐 3. The Two Types of Git Tags
+An interviewer will expect you to know that Git handles tags in two fundamentally different ways under the hood.
+
+### A. Lightweight Tags (Simple Pointers)
+* __What it is:__ A lightweight tag is just a named pointer to a commit. It is literally just a text file inside `.git/refs/tags/` containing a commit SHA-1 hash. It contains no extra metadata.
+
+* __Command:__ `git tag v1.0.0-light`
+
+* __Use Case:__ Quick, private, local bookmarking.
+
+### B. Annotated Tags (Production/Industry Standard)
+* __What it is:__ An annotated tag is stored as a __full database object__ in Git. It is checksummed, and it contains the name of the person who created it, their email, a timestamp, and a dedicated tag message (like a commit message). They can also be cryptographically signed using GPG keys for security verification.
+
+* __Command:__ `git tag -a v1.0.0 -m "Official production release of checkout module"`
+
+* __Use Case: All public and official industry releases.__
+
+## 🕹️ 4. Critical Tag Commands and Options
+### Listing Tags
+* `git tag`: Lists all tags in the repository alphabetically.
+
+* `git log --oneline --decorate`: Shows your commit history alongside branch pointers and tag markers cleanly.
+
+### Tagging Past History
+If a release manager forgot to tag a release yesterday and five new commits have been made since, they don't have to panic. They can target a past commit hash directly:
+
+* `git tag -a v1.2.0 <past-commit-sha1> -m "Delayed release tag"`
+
+### Sharing Tags with Remote (GitHub)
+* *Crucial Interview Trap*: Running `git push` does not send your tags to GitHub. Tags must be explicitly pushed to the server.
+
+* Push a single tag: `git push origin v1.0.0`
+
+* Push all local tags at once: `git push origin --tags`
+
+---
+
+# 🔥 Common Interview Follow-Up Question
+__Q: "If both a Branch and a Tag are just pointers to a commit, what is the mechanical difference between them under the hood?"__
+__Your Answer:__ "The core difference lies in their __mutability__.
+
+1. __A Branch pointer is dynamic.__ When you are on a branch and make a new commit, Git automatically moves that branch pointer forward to the new commit hash.
+
+2. __A Tag pointer is static.__ It is completely immutable. If you switch to a tag and make a new commit, the tag does not move. Instead, Git will put you into a __Detached HEAD__ state because your active workspace left the tag marker behind.
+
+*In short: Branches track ongoing journeys; tags freeze specific destinations."*
+
 ---
 
 # Skip Staging Area
