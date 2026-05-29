@@ -3969,6 +3969,51 @@ c9dda47 Desc: Git Merge
 33654a1 docs: git local workflow notes
 
 ```
+---
+
+# Show Git Graph is PowerShell
+
+```bash
+git log --graph --oneline --all --decorate   
+```
+
+__Example:__
+```bash
+test on  master [!+]
+❯ git log --oneline
+8b25859 (HEAD -> master) Info: Changes in fix.
+052ca11 (improve) Info: Changes in fix.
+60d53f3 Info: Changes in main.
+08b7ba4 Info: Merge fix branch.
+ad07053 Info: Edit on fix branch.
+9dec0a0 Info: Edit on main branch.
+51d5b2b Info: Test Fast-Forward Merge.
+eaf5a4f Dev: add para tag.
+6bd3722 Info: Initial Commit.
+
+test on  master [!+]
+❯ git log --graph --oneline --all --decorate
+*   8b25859 (HEAD -> master) Info: Changes in fix.
+|\
+| * 052ca11 (improve) Info: Changes in fix.
+* | 60d53f3 Info: Changes in main.
+* | 08b7ba4 Info: Merge fix branch.
+|\|
+| * ad07053 Info: Edit on fix branch.
+* | 9dec0a0 Info: Edit on main branch.
+|/
+* 51d5b2b Info: Test Fast-Forward Merge.
+* eaf5a4f Dev: add para tag.
+* 6bd3722 Info: Initial Commit.
+
+```
+
+___
+
+# Git Rebase
+
+why say don't use rebase, because rebase rewrite the history then if you not handle or understand the concept of rebase perfectly then you mess the codebase
+
 
 ---
 # ❤️ Sources Respect
