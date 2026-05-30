@@ -2808,7 +2808,7 @@ This occurs when the target branch has __no new commits__ since the source branc
 
 * __Merge Commit:__ None is created by default.
 
-*(__Apni basha me:__ fast forward merge means, there only work happen on single branch and no work done in second branch so git compare commit points where he see only one branch has changes so he accept it. )*
+*(__Apni bhasha me:__ fast forward merge means, there only work happen on single branch and no work done in second branch so git compare commit points where he see only one branch has changes so he accept it. )*
 
 This one is easy as branch that you are trying to merge is usually ahead and there are no conflicts.
 
@@ -4209,10 +4209,6 @@ amaa on  main
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 amaa on  main 
-❯ git switch featrue             
-fatal: invalid reference: featrue
-
-amaa on  main 
 ❯ git switch feature
 Switched to branch 'feature'
 
@@ -4833,7 +4829,7 @@ d809d82 HEAD@{4}: rebase (start): checkout master
 
 * `checkout: moving from...`: The exact operation payload that triggered the movement.
 
-## 🛠️ 4. Real-World Recovery Scenarios
+## 🛠️ 4. Real-World Recovery Scenarios (how to undo a bad merge or rebase)
 Here is how you use `reflog` to fix the exact kind of rebase mess or accidental deletion encountered during rigorous production engineering.
 
 ### Scenario A: You ran a bad rebase and want to go back
@@ -4997,6 +4993,17 @@ git reset --hard HEAD@{1}
 
 *Note: use commit-hash always to ensure there are zero chance of mistake. pin-point work.*
 
+### How to undo a bad merge or rebase
+
+To undo a __bad merge__, the method depends on whether the changes have been pushed to a remote repository.  If the merge is __local only__ and not yet pushed, use `git reset --hard ORIG_HEAD` to instantly revert the branch to the state before the merge began.  If the merge has __already been pushed__ to a shared remote, use `git revert -m 1 <merge-commit-hash>` to create a new commit that reverses the merge without rewriting history, which is safe for team collaboration. 
+
+To undo a __bad rebase__, use `git reflog` to identify the commit hash that existed before the rebase started.  Then, execute `git reset --hard <pre-rebase-commit-hash>` to restore the branch to its original state. If the rebase is still __in progress__ with unresolved conflicts, simply run `git rebase --abort` to cleanly exit the operation and return to the pre-rebase state. 
+
+#### Key Considerations
+* __Re-merging after Revert:__ If you revert a merge commit, Git remembers the branch was merged. To merge the branch again later, you must first __revert the revert__ commit (`git revert <revert-commit-hash>`). 
+* __History Rewriting:__ `git reset` rewrites history and requires a force push (`git push --force-with-lease`) if changes are already on a remote. `git revert` is the safer, non-destructive option for shared branches. 
+* __Backup Strategy:__ It is recommended to create a backup branch (e.g., `git branch backup-before-rebase`) before performing risky rebase or merge operations.
+
 ---
 
 ## 🎯 Important Guardrails and Local Limitations
@@ -5015,15 +5022,141 @@ git gc --prune=now
 ```
 
 The first command immediately clears out the entire historical registry of the reflog, and the second command triggers the low-level garbage collection engine to completely prune and wipe those unreferenced binary objects out of the physical `.git/objects` database."
+
 ___
+
+# Restore and Recovery
+
+__Git restore__ is designed for __file-level operations__, specifically to discard uncommitted changes in the working directory or unstage files from the index __without altering commit history__.  It is safer and more explicit for local edits, introduced in Git 2.23 to replace the ambiguous file-restore aspects of `git checkout`. 
+
+__Git reset__ is a __branch-level operation__ that moves the current branch pointer to a different commit, thereby __rewriting commit history__.  While it can also unstage files, it is primarily used to undo commits and can permanently discard changes if used with the `--hard` flag, making it riskier for shared branches. 
+
+## Key Differences
+|Feature|git restore|git reset|
+|:--:|:--:|:--|
+|__Primary Use__|Restore files or unstage changes.|Move branch pointer or unstage files.|
+|__Commit History__|__No impact;__ only affects working tree/index.|__Yes;_ can alter or erase history.|
+|__Safety__|Safe; only affects local, uncommitted work.|Unsafe on shared branches; rewrites history.|
+|__Scope__|File-level (working directory/staging area).|Branch-level (commits/staging/working tree).|
+|__Typical Syntax__|`git restore <file>` or `git restore --staged <file>`|`git reset <commit>` or `git reset --hard HEAD`|
+
+## Common Use Cases
+* Use `git restore` when:
+  * You want to discard local edits: `git restore filename.txt`
+  * You want to unstage a file without losing edits: `git restore --staged filename.txt`
+  * You want to restore all files to the last commit: `git restore . `
+* Use git reset when:
+  * You want to undo the last commit but keep changes staged: `git reset --soft HEAD~1`
+  * You want to undo the last commit and unstage changes: `git reset --mixed HEAD~1`
+  * You want to completely discard the last commit and all changes: `git reset --hard HEAD~1`
+  * You want to unstage a file (older syntax): `git reset filename.txt`
+
+---
+
+To restore a specific file from a specific commit without moving your entire branch back in time, the most modern and recommended command is `git restore`.
+
+In your current setup, you are at commit `C` (`1473eec`). If you want to bring `home.html` back to the way it looked in commit `A` (`61d1555`) while staying on your current branch, you use the `--source` flag.
+
+## How to Restore a Specific File
+Run this command from your `amaa` directory:
+
+```bash
+git restore --source 61d1555 home.html
+```
+
+__What this does:__
+
+* It pulls the version of `home.html` from commit __61d1555__ into your current working directory.
+
+* It automatically stages the change (moves it to the index).
+
+* __Crucially:__ It does not move your `HEAD` or delete your newer commits (`B` and `C`).
+
+## git reset vs. git restore
+In your terminal logs, you used git reset --hard to jump between versions. While that works for moving the entire repository, it is often too "heavy" for just fixing one file.
+|Feature|git reset|git restore|
+|:--:|:--:|:--:|
+|__Primary Goal__|Moves the __Branch Pointer__ and `HEAD`.|Modifies __Files__ in the workspace/index.|
+|__Scope__|Usually affects the entire repository.|Usually affects specific files or folders.|
+|__History__|Can "delete" commits from the current log.|Does not touch the commit history or `HEAD`.|
+|__Risk Level__|__High__ (with `--hard`, unsaved work is lost).|__Low__ (only overwrites specific files).|
+
+## When to use which?
+* __Use `git reset --hard <commit>`__ if you realized you went down the completely wrong path and want the entire project to snap back to that point in time, discarding everything after it.
+
+* __Use `git restore --source <commit> <file>`__ if you like your current progress but just need to "copy-paste" an old version of one specific file back into the project.
+
+__Example of Reset__
+
+```bash
+E:\amaa 
+❯ git init --initial-branch=main
+Initialized empty Git repository in E:/amaa/.git/
+
+amaa on  main [?] 
+❯ git add .                     
+
+amaa on  main [+] 
+❯ git commit -m "A"                                                                     
+[main (root-commit) 61d1555] A
+ 1 file changed, 1 insertion(+)
+ create mode 100644 home.html
+
+amaa on  main 
+❯ git commit -a -m "B"                            
+[main 01594a6] B
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+amaa on  main 
+❯ git commit -a -m "C"
+[main 1473eec] C
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+amaa on  main 
+❯ git reflog
+1473eec (HEAD -> main) HEAD@{0}: commit: C
+01594a6 HEAD@{1}: commit: B
+61d1555 HEAD@{2}: commit (initial): A
+
+amaa on  main 
+❯ git reset --hard 01594a6  
+HEAD is now at 01594a6 B
+
+amaa on  main 
+❯ git reflog
+01594a6 (HEAD -> main) HEAD@{0}: reset: moving to 01594a6
+1473eec HEAD@{1}: commit: C
+01594a6 (HEAD -> main) HEAD@{2}: commit: B
+61d1555 HEAD@{3}: commit (initial): A
+
+amaa on  main 
+❯ git reset --hard 1473eec
+HEAD is now at 1473eec C
+
+amaa on  main 
+❯ 
+```
+---
+
+## A Note on your git reflog
+Your logs show a perfect example of why the reflog is useful:
+
+1. You moved to __B__ (`01594a6`) using `reset --hard`.
+
+2. Commit C (`1473eec`) disappeared from your `git log`.
+
+3. You checked `git reflog`, found the hash for __C__ at `HEAD@{1}`, and were able to `reset --hard` back to it.
+
+__Expert Tip:__ In the future, if you find yourself using `reset --hard` just to look at an old version of a file, try `git show <commit>:<file>` to just read it in the terminal, or `git restore` to bring it back without moving your branch.
+
+
+---
 
 practice an interactive rebase to squash commits
 
-learn how to undo a bad merge or rebase
 
 how to put merge on remote
 
-git reset --hard use just one time not go back to previous head
 ---
 # ❤️ Sources Respect
 * https://docs.chaicode.com/youtube/chai-aur-git/
