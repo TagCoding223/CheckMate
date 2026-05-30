@@ -2136,7 +2136,7 @@ a1b2c3d feat(auth): add JWT validation middleware
 * __Behavior:__ Limits the log output to the specific number of recent commits specified (e.g., ``git log -n 5``).
 
 ### D. Viewing Code Changes Inline: ``git log -p`` (or ``--patch``)
-* __Behavior:__ Shows the full metadata along with the actual line-by-line code difference (``diff``) introduced by each commit.
+* __Behavior:__ Shows the full metadata along with the actual line-by-line code difference (``diff``) introduced by each commit. `git log --stat` for in short diff.
 
 * __Interview Context:__ Useful when you don't just want to see who committed, but exactly what code lines they changed.
 
@@ -2152,9 +2152,9 @@ __Example:__
 test on  master [+?]
 ❯ git log --pretty=fuller
 commit 666bca49a9a2f401a26211eda8bdf346860bc520 (HEAD -> master)
-Author:     Vishal <vishalv.c22.3@gmail.com>
+Author:     Vishal <vishalv.c22.3@gmail.com> # author how creates files
 AuthorDate: Wed May 20 23:05:47 2026 +0530
-Commit:     Vishal <vishalv.c22.3@gmail.com>
+Commit:     Vishal <vishalv.c22.3@gmail.com> # committer how make a commit (changes)
 CommitDate: Wed May 20 23:05:47 2026 +0530
 
     Initial
@@ -5082,9 +5082,9 @@ In your terminal logs, you used git reset --hard to jump between versions. While
 |__Risk Level__|__High__ (with `--hard`, unsaved work is lost).|__Low__ (only overwrites specific files).|
 
 ## When to use which?
-* __Use `git reset --hard <commit>`__ if you realized you went down the completely wrong path and want the entire project to snap back to that point in time, discarding everything after it.
+* __Use `git reset --hard <commit>`__ if you realized you went down the completely wrong path and want the entire project to snap back to that point in time, discarding everything after it. or `git checkout -f` current to last commit.
 
-* __Use `git restore --source <commit> <file>`__ if you like your current progress but just need to "copy-paste" an old version of one specific file back into the project.
+* __Use `git restore --source <commit> <file>`__ if you like your current progress but just need to "copy-paste" an old version of one specific file back into the project. or `git checkout -- <file>` current to last commit.
 
 __Example of Reset__
 
@@ -5231,6 +5231,90 @@ __Your Answer:__
 * "`git rm` is a __destructive__ command that deletes the file from both the Git staging area and my physical computer's hard drive. Use this when you want a file gone forever.
 
 * `git rm --cached` is a __structural configuration change__. It preserves the file safely on my local hard drive but strips it from Git's tracking system. Use this when a local file contains sensitive API keys or environment secrets that should never be pushed to a public remote server like GitHub."
+
+---
+
+# Git alias
+
+An __alias__ in Git is a custom shortcut or nickname you create for an existing Git command.
+
+If you are tired of typing long commands like `git log --graph --oneline --all --decorate`, or if you frequently make typos, you can create a short alias (like `git graph`) to execute the heavy lifting for you.
+
+## 🛠️ 1. How to Configure an Alias
+Git aliases are stored inside your configuration files (either locally in `.git/config` or globally in `~/.gitconfig`).
+
+### The Global Command Syntax:
+```bash
+git config --global alias.<shortcut-name> "<actual-git-command>"
+```
+
+### Classic, High-Productivity Examples:
+* __The Quick Switch:__ Turn `git switch` into a single character.
+
+```bash
+git config --global alias.s "switch"
+# Usage: git s feature-branch
+```
+
+* __The Clean Stage & Commit:__ Combine status checking.
+
+```bash
+git config --global alias.st "status -sb" 
+# Usage: git st (Prints a short, beautiful branch summary status)
+```
+
+* __The Advanced Graph Viewer:__ Map your entire commit architecture.
+
+```bash
+git config --global alias.graph "log --graph --oneline --all --decorate"
+# Usage: git graph
+```
+
+## 🚀 2. Advanced: Running External Shell Commands (The `!` Prefix)
+By default, Git expects your alias to be another native Git command. However, if you prefix the alias with an exclamation mark (`!`), Git will execute it as a raw terminal/shell command (Bash/PowerShell).
+
+This allows you to link completely independent actions together:
+
+* __The "Save My Work" Alias:__ Safely stage everything and commit with a quick message in one line.
+
+```bash
+git config --global alias.save "!git add . && git commit -m 'Quick save'"
+# Usage: git save
+```
+
+* __The Post-Merge Housecleaner:__ Automatically delete all local branches that have already been merged into `main`.
+
+```bash
+git config --global alias.clean-branches "!git branch --merged | grep -v 'main' | xargs git branch -d"
+# Usage: git clean-branches
+```
+
+## 👁️ 3. Where are Aliases Saved? (How to Edit/Delete Them)
+If you make a typo when defining an alias, you don't need to overwrite it from the terminal. You can open your global configuration file directly:
+
+```bash
+git config --global --edit
+```
+
+This opens your global text profile in your terminal editor (like Vim or VS Code). If you scroll down, you will see a dedicated `[alias]` structural block that you can manually rewrite or clear:
+
+```bash
+Ini, TOML
+[user]
+    name = Your Name
+    email = your@email.com
+[alias]
+    s = switch
+    st = status -sb
+    graph = log --graph --oneline --all --decorate
+    save = !git add . && git commit -m 'Quick save'
+```
+
+## 🎯 Industry Perspective & Interview Wisdom
+__Q: "Should you rely heavily on Git aliases during your daily production work?"__
+__Your Answer:__ "Aliases are exceptional tools for speeding up local individual productivity and reducing repetitive strain on long logging arguments. However, relying on them too heavily can be a double-edged sword.
+
+If you get excessively comfortable using custom non-standard shortcuts (like `git cm` instead of `git commit`), you might struggle or make critical errors when ssh-ing into live production servers, pair-programming on a teammate's laptop, or typing commands live during technical whiteboard interviews where a standard Git environment is expected."
 
 ---
 
