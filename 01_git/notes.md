@@ -5318,7 +5318,6 @@ If you get excessively comfortable using custom non-standard shortcuts (like `gi
 
 ---
 
-practice an interactive rebase to squash commits
 
 
 how to put merge on remote
