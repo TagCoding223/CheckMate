@@ -6565,12 +6565,3 @@ To recover the lost commit, I would open the private local ledger using `git ref
 __<center>*The End 😮‍💨*</center>__
 
 ---
-
-# ❤️ Sources Respect
-* https://docs.chaicode.com/youtube/chai-aur-git/
-* https://www.geeksforgeeks.org/git/git-interview-questions-and-answers/
-* https://www.geeksforgeeks.org/git/git-tutorial/
-* https://www.geeksforgeeks.org/git/git-introduction/
-* https://www.geeksforgeeks.org/git/git-features/
-* https://www.geeksforgeeks.org/git/what-is-a-git-repository/
-* https://www.geeksforgeeks.org/git/bare-repositories-in-git/
