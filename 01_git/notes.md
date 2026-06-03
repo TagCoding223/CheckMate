@@ -5970,7 +5970,7 @@ git branch -vv
 ```
 
 Output:
-``text
+```text
 * main  d6de30c [origin/main] Initial commit
 ```
 
